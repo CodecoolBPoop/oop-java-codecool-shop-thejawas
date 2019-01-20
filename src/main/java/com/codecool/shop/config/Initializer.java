@@ -59,7 +59,11 @@ public class Initializer implements ServletContextListener {
     public void contextInitialized(ServletContextEvent sce) {
 
         if (CURRENT_IMPLEMENTATION == ImplementationType.MEMORY) {
-            initializeFromMemory();
+            try {
+                initializeFromMemory();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
         } else if (CURRENT_IMPLEMENTATION == ImplementationType.DATABASE) {
             initializeFromDatabase();
         }
@@ -77,7 +81,7 @@ public class Initializer implements ServletContextListener {
         CART_DATA_MANAGER.remove(CartStatusType.EMPTY);
     }
 
-    private void initializeFromMemory() {
+    private void initializeFromMemory() throws ClassNotFoundException {
 
         String filePathForSupplierData = "src/main/resources/json_data_persistence/supplier_data.json";
         loadSuppliersIntoMemory(filePathForSupplierData);
@@ -102,21 +106,42 @@ public class Initializer implements ServletContextListener {
         return guest.getId();
     }
 
-    private void loadSuppliersIntoMemory(String filePath) {
-        List<Supplier> supplierList = JsonMappingHandler.jsonFileToSupplierList(filePath);
+    private void loadSuppliersIntoMemory(String filePath) throws ClassNotFoundException {
+        List<Supplier> supplierList = null;
+        try {
+            supplierList = (List<Supplier>) JsonMappingHandler.jsonFileToObjectList(filePath, "com.codecool.shop.model.Supplier");
+        } catch (ClassNotFoundException cnfe) {
+            System.out.println("\"Supplier\" class is not found when initializing from json file");
+            throw new ClassNotFoundException(cnfe.getMessage());
+        }
+
         SupplierDaoMem supplierDataManager = SupplierDaoMem.getInstance();
         supplierDataManager.setData(supplierList);
     }
 
-    private void loadProductCategoriesIntoMemory(String filePathForProductCategoryData) {
+    private void loadProductCategoriesIntoMemory(String filePath) throws ClassNotFoundException {
         ProductCategoryDaoMem productCategoryDataManager = ProductCategoryDaoMem.getInstance();
-        List<ProductCategory> productCategoryList = JsonMappingHandler.jsonFileToProductCategoryList(filePathForProductCategoryData);
+        List<ProductCategory> productCategoryList = null;
+        try {
+            productCategoryList = (List<ProductCategory>) JsonMappingHandler.jsonFileToObjectList(filePath, "com.codecool.shop.model.ProductCategory");
+        } catch (ClassNotFoundException cnfe) {
+            System.out.println("ProductCategory class is not found when initializing from json file");
+            throw new ClassNotFoundException(cnfe.getMessage());
+        }
+
         productCategoryDataManager.setData(productCategoryList);
     }
 
-    private void loadProductsIntoMemory(String filePath) {
+    private void loadProductsIntoMemory(String filePath) throws ClassNotFoundException {
         ProductDaoMem productDataManager = ProductDaoMem.getInstance();
-        List<Product> productList = JsonMappingHandler.jsonFileToProductList(filePath);
+        List<Product> productList = null;
+        try {
+            productList = (List<Product>) JsonMappingHandler.jsonFileToObjectList(filePath, "com.codecool.shop.model.Product");
+        } catch (ClassNotFoundException cnfe) {
+            System.out.println("Product class is not found when initializing from json file");
+            throw new ClassNotFoundException(cnfe.getMessage());
+        }
+
         productDataManager.setData(productList);
     }
 

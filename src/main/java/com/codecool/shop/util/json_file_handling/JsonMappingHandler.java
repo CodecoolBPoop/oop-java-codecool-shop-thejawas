@@ -5,9 +5,12 @@ import com.codecool.shop.model.ProductCategory;
 import com.codecool.shop.model.Supplier;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.CollectionType;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class JsonMappingHandler {
@@ -63,5 +66,24 @@ public class JsonMappingHandler {
 
         return objectList;
     }
+
+    public static List<?> jsonFileToObjectList(String fileName, String fullyQualifiedName) throws ClassNotFoundException {
+
+        Class<?> aClass = Class.forName(fullyQualifiedName);
+        ObjectMapper objectMapper = new ObjectMapper();
+        CollectionType listType = objectMapper.getTypeFactory().constructCollectionType(List.class, aClass);
+
+        List<?> objectList = Collections.singletonList(listType);
+
+        try {
+            objectList = objectMapper.readValue(new File(fileName), listType);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return objectList;
+    }
+
 
 }
